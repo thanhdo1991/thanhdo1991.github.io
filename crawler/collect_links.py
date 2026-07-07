@@ -5,16 +5,49 @@ import json
 import time
 import sys
 import os
+from urllib.robotparser import RobotFileParser
+from urllib.parse import urlparse
 
 CATEGORY_URL = "https://sachiepvien.net/category/de-cu/"
+ROBOTS_URL = "https://sachiepvien.net/robots.txt"
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "crawled_data", "de-cu")
 LINKS_FILE = os.path.join(OUTPUT_DIR, "links.json")
 LOG_FILE = os.path.join(OUTPUT_DIR, "crawl_log.json")
 RATE_LIMIT = 1.0  # seconds between requests
+MAX_RETRIES = 3
+RETRY_DELAY = 2.0  # initial backoff seconds
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
+
+def check_robots():
+    """Check robots.txt permission before crawling."""
+    rp = RobotFileParser()
+    rp.set_url(ROBOTS_URL)
+    rp.read()
+    path = urlparse(CATEGORY_URL).path
+    allowed = rp.can_fetch("*", CATEGORY_URL)
+    if not allowed:
+        print(f"ERROR: robots.txt disallows crawling {path}")
+        sys.exit(1)
+    print(f"robots.txt check: {path} allowed={allowed}")
+
+def fetch_with_retry(url, max_retries=MAX_RETRIES, timeout=30):
+    """Fetch URL with retry and exponential backoff."""
+    last_exc = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=timeout)
+            resp.raise_for_status()
+            return resp
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
+            last_exc = e
+            if attempt < max_retries:
+                delay = RETRY_DELAY * (2 ** (attempt - 1))
+                print(f"    Retry {attempt}/{max_retries} after {delay:.0f}s: {e}")
+                time.sleep(delay)
+    raise last_exc
 
 # Known non-story single-path pages on this domain
 SKIP_PATHS = {
@@ -56,8 +89,7 @@ def is_story_url(href):
 def collect_page_links(page_num):
     url = f"{CATEGORY_URL}page/{page_num}/" if page_num > 1 else CATEGORY_URL
     print(f"  Fetching page {page_num}: {url}")
-    resp = requests.get(url, headers=HEADERS, timeout=30)
-    resp.raise_for_status()
+    resp = fetch_with_retry(url)
     soup = BeautifulSoup(resp.text, "html.parser")
 
     # WordPress post titles are consistently inside <h2> tags
@@ -78,12 +110,21 @@ def collect_page_links(page_num):
     print(f"    Found {len(unique)} story links")
     return unique
 
-def find_total_pages():
-    """Find the last page number from pagination."""
-    print("Finding total pages...")
-    resp = requests.get(CATEGORY_URL, headers=HEADERS, timeout=30)
-    resp.raise_for_status()
-    soup = BeautifulSoup(resp.text, "html.parser")
+def find_total_pages(soup_cache=None):
+    """Find the last page number from pagination.
+
+    Args:
+        soup_cache: Optional BeautifulSoup object from page 1 (avoids duplicate fetch).
+
+    Returns:
+        Tuple of (max_page, soup_cache): max page number and the soup for page 1.
+    """
+    if soup_cache is None:
+        print("Finding total pages...")
+        resp = fetch_with_retry(CATEGORY_URL)
+        soup = BeautifulSoup(resp.text, "html.parser")
+    else:
+        soup = soup_cache
 
     max_page = 0
     for a_tag in soup.find_all("a", href=True):
@@ -103,7 +144,7 @@ def find_total_pages():
                 max_page = 1  # will be updated as we go
                 break
 
-    return max_page or 1
+    return max_page or 1, soup
 
 def main():
     ensure_dir()
@@ -113,9 +154,14 @@ def main():
         print(f"Crawl already completed! Found {len(log['links'])} links total.")
         return
 
+    check_robots()
+
     if log["total_pages"] is None:
-        log["total_pages"] = find_total_pages()
+        total_pages, soup_cache = find_total_pages()
+        log["total_pages"] = total_pages
         print(f"Total pages to crawl: {log['total_pages']}")
+    else:
+        soup_cache = None
 
     start_page = log["current_page"]
     print(f"Starting from page {start_page}")
@@ -123,7 +169,23 @@ def main():
     for page in range(start_page, log["total_pages"] + 1):
         print(f"\n--- Page {page}/{log['total_pages']} ---")
         try:
-            page_links = collect_page_links(page)
+            # Use cached soup from find_total_pages for page 1 to avoid duplicate fetch
+            if page == 1 and soup_cache is not None:
+                print(f"  Using cached page 1 content")
+                h2_links = []
+                for h2 in soup_cache.find_all("h2"):
+                    a = h2.find("a", href=True)
+                    if a and is_story_url(a["href"]):
+                        h2_links.append(a["href"].rstrip("/"))
+                seen = set()
+                page_links = []
+                for link in h2_links:
+                    if link not in seen:
+                        seen.add(link)
+                        page_links.append(link)
+                print(f"    Found {len(page_links)} story links")
+            else:
+                page_links = collect_page_links(page)
             log["links"].extend(page_links)
             log["current_page"] = page + 1
             save_progress(log)
