@@ -17,3 +17,8 @@ __pycache__/
 
 # Download story content (large, keep out of git)
 crawled_data/stories/
+
+# Crawl artifacts + large metadata (local only, varies per run)
+crawled_data/de-cu/
+crawled_data/metadata.json
+crawled_data/download_full_log.json

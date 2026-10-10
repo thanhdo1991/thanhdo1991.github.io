@@ -1,0 +1,33 @@
+{
+  "completed": [
+    "nguoi-o-re-vinh-quang",
+    "vung-kiem-tho",
+    "hao-nhu-lao-su-luu-diem",
+    "kia-son-kia-nguoi-kia-tinh",
+    "tien-mau-loai-tinh-luc",
+    "yeu-dao-ky-bo-02",
+    "lao-ba-goi-cam-khai-pha-cuoc-hanh-trinh",
+    "liet-hoa-phuong-hoang-1-4-chuong-6-tiet-11-nhan-vat-chi-1-2-10-vu-lan-nap-lieu-ngoai-truyen-1-6-chuong",
+    "tam-khong-xoay-nguoc-thoi-mien-mang-thai-no-an-mon-danh-sach",
+    "loan-duc-loi-nhan-trang",
+    "dau-pha-thuong-khung-hac-am-no-le-ban-dau-gia-dai-hoi",
+    "bien-xanh-muc-phong",
+    "lanh-diem-kieu-the-chi-huan-no-tien-kieu-the-bi-thuong-nang-bo-02-1-32-chuong-non-xanh-day-do-nhuc-nha-cao-lanh-nu-than-phu-nhan",
+    "sieu-cap-dam-loan-he-thong",
+    "duc-vong-khai-pha-he-thong",
+    "cuong-de-tram-my-duyen-ho-hoa-nguoi-man-ro",
+    "bich-ma-luc",
+    "dai-nu-nhi-ga-tuan-trang-mat-phong-ba",
+    "cua-ta-bao-nhu-hong-lon-chuyen-dung-thit-chau"
+  ],
+  "errors": [
+    {
+      "slug": "dai-dam-hiep",
+      "reason": "ERROR: Download failed for 'https://mega.nz/file/hmhxTQaT#APPZ-ICOmRY-im87RQhmFkMj1Exb4U69f7cdXru2s1k': Local file already exists: D:\\claude-sachiepvien\\crawled_data\\stories/Đại dâm hiệp (1-2 bộ 109 c"
+    },
+    {
+      "slug": "ngu-tien",
+      "reason": "ERROR: Download failed for 'https://mega.nz/file/93JxFLab#4ki3U2hwFD4DCpPojtPTexgWDbU97SWi3URZfG5OdkA': Local file already exists: D:\\claude-sachiepvien\\crawled_data\\stories/Ngự tiên (1-95 chương + 4 "
+    }
+  ]
+}
