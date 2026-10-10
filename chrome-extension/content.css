@@ -1,0 +1,102 @@
+/* Banner nổi ở góc dưới-phải, tông tối, chữ sáng — đủ tương phản trên mọi nền.
+   Được manifest.json (content_scripts[0].css) inject vào trang sachiepvien.net. */
+
+#siepv-mega-banner {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: #1b1f27;
+  color: #f5f7fa;
+  border: 1px solid #2f3746;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+#siepv-mega-banner .siepv-icon {
+  flex: 0 0 auto;
+  font-size: 15px;
+}
+
+#siepv-mega-banner .siepv-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#siepv-mega-banner .siepv-actions {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+#siepv-mega-banner button {
+  font: inherit;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #3d4759;
+  background: #262c38;
+  color: #e8ecf2;
+  cursor: pointer;
+}
+
+#siepv-mega-banner button:hover {
+  background: #313a4a;
+}
+
+#siepv-mega-banner button.siepv-primary {
+  background: #2f6fd0;
+  border-color: #2f6fd0;
+  color: #fff;
+}
+
+#siepv-mega-banner button.siepv-primary:hover {
+  background: #3a7ee0;
+}
+
+#siepv-mega-banner .siepv-close {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border-color: transparent;
+  background: transparent;
+  color: #9aa5b6;
+}
+
+#siepv-mega-banner .siepv-close:hover {
+  background: #313a4a;
+  color: #fff;
+}
+
+/* Viền trạng thái */
+#siepv-mega-banner[data-state="ok"] {
+  border-color: #2f7d4f;
+}
+
+#siepv-mega-banner[data-state="error"] {
+  border-color: #8a4a3c;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #siepv-mega-banner {
+    animation: siepv-in 160ms ease-out;
+  }
+  @keyframes siepv-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

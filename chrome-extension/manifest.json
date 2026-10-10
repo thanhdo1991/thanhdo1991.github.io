@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "SachIEpVien → Mega",
+  "version": "1.0.0",
+  "description": "Tự động resolve shortlink trên trang truyện sachiepvien.net để đi thẳng tới trang mega.nz.",
+  "minimum_chrome_version": "88",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://sachiepvien.net/*",
+    "https://*.sachiepvien.net/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://sachiepvien.net/*", "https://*.sachiepvien.net/*"],
+      "exclude_matches": ["https://link.sachiepvien.net/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SachIEpVien → Mega"
+  }
+}

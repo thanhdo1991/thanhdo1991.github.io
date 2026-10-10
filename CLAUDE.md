@@ -1,49 +1,57 @@
-# Self-Improving Framework Setup
+# claude-sachiepvien
 
-## Project Overview
-This project is initialized using the Universal Self-Improving Framework with a symbolic `.ai/` junction linking to the framework source.
+## Dự án
 
-## ✅ PRIORITY: Check .ai/ framework first
+Săn truyện từ `sachiepvien.net` về 2 hướng:
+1. **Chrome extension** (MV3) — tự resolve shortlink tải truyện → mở thẳng mega.nz trong **tab mới**.
+2. **Bộ Python crawler** (CLI) — tải truyện + import vào Drupal local (XAMPP).
 
-### Critical Project Rules:
-1. **ALWAYS check files in `.ai/` directory BEFORE project-specific files**
-2. **Treat `.ai/` as the source of truth** - it contains the framework
-3. **Never modify `.ai/` files directly** unless explicitly authorized
-4. **Use `.ai/` as reference** for all framework patterns, workflows, and configurations
+## Cấu trúc
 
-## Project Structure
-- `.ai/` - Framework junction (23.45 MB) - **CHECK THIS FIRST**
-- `README.md` - Project-specific documentation  
-- `CLAUDE.md` - Framework configuration and rules
-
-## Setup Notes
-- The `.ai/` directory is a junction link to the framework source: `D:\claude-aerolink\.ai\`
-- This allows access to all framework functionality without duplicating files
-- Changes to the framework source are immediately available in this project
-- All project-specific configuration should go in this project directory (outside `.ai/`)
-
-## Getting Started
-1. **Refer to the framework documentation in `.ai\README.md` for detailed framework capabilities**
-2. **Use `claude` CLI to interact with the framework**
-3. **Check `.ai\CLAUDE.md` for framework-specific instructions**
-
-## Framework Integration
-This project is properly integrated with the Universal Self-Improving Framework:
-- Tool-agnostic architecture
-- Self-improvement lifecycle: Recall → Plan → Execute → Review → Reflect → Extract → Update → Compress
-- Modular skills and workflows
-
-## Session Protocol
-**For EVERY session, run this priority check:**
 ```
-1. Check: \\.\ai\\README.md (framework overview)
-2. Check: \\.\ai\\CLAUDE.md (framework rules)
-3. Check: \\.\ai\\agent\\personality.md (current agent configuration)
-4. Check: \\.\ai\\memory\\project-goals.md (active project goals)
-5. Then proceed with project-specific work
+chrome-extension/
+  manifest.json     MV3: storage + host(sachiepvien.net) + content script
+  background.js     Phân loại link tải (classify) + mở tab mới (chrome.tabs.create)
+  content.js        Tìm nút "Tải File Truyện Về Máy Ở Đây" trên trang detail
+  content.css       Banner nổi (blocked/error/done)
+  popup.html/js     Bật/tắt tự động (chrome.storage.local key "enabled")
+crawler/            CLI Python: collect_links, crawl_one, dl_one, download_mega,
+                    download_full, batch_download, mega_direct, mega_downloader,
+                    download_stories
+import/             Python import truyện vào Drupal (import.py, import_story.py, import.sh)
+crawl_one.bat       Windows wrapper cho crawler/crawl_one.py
+crawled_data/
+  stories/          Các file .txt truyện đã tải (24 file — GIỮ LẠI)
+  metadata.json     Dữ liệu metadata truyện (giữ)
+  download_full_log.json
 ```
 
-## Framework Protection
-⚠️ **DO NOT** create files inside `.ai/` directory. All modifications should go in this project's root directory.
-⚠️ **The `.ai/` directory is read-only** - use the junction properly.
-⚠️ **Framework updates come from:** `D:\claude-aerolink\.ai\`
+## Luồng hoạt động extension (đã kiểm chứng thực tế)
+
+```
+Trang truyện (sachiepvien.net/...)
+  └─ <a href="sachiepvien.net/redirect.html?url=<base64>">  (nút "Tải File Truyện Về Máy Ở Đây")
+       └─ base64 → link.sachiepvien.net/<id>
+            └─ Mở tab mới → Chrome theo redirect 307 → mega.nz/file/<id>#<key>
+```
+
+**Quan trọng:** KHÔNG resolve bằng `fetch()`. Chrome `fetch(redirect:'follow')`
+bỏ mất fragment `#key` (key chỉ nằm trong HTTP `Location` header của redirect
+307), khiến mega báo "Decryption key". Giải pháp đúng: mở tab để browser tự
+theo redirect và giữ nguyên `#key`.
+
+## Cài đặt / dùng
+
+**Extension:** `chrome://extensions` → bật *Developer mode* → *Load unpacked* →
+chọn `chrome-extension/`. Mở trang truyện → tự mở mega.nz ở tab mới
+(trừ khi tắt trong popup).
+
+**Crawler CLI:** `python crawler/crawl_one.py <story_url> [slug] [--local]`
+hoặc `crawl_one.bat`. `python crawler/collect_links.py` để lấy danh sách.
+`python crawler/download_full.py [--resume|--test]` để tải batch từ metadata.json.
+
+## Lịch sử gần đây
+
+- 2026-10-10 xây extension; sửa lỗi "mất key" bằng cách mở tab thay vì fetch.
+- 2026-10-10 xóa `docs/`, `.superpowers/`, `crawled_data/stories.zip`, `.venv/`
+  (dọn dự án), sau đó khôi phục bộ crawler/import theo yêu cầu.

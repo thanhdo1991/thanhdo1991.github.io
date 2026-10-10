@@ -14,3 +14,6 @@ __pycache__/
 .vscode/
 *.swp
 *.swo
+
+# Download story content (large, keep out of git)
+crawled_data/stories/
